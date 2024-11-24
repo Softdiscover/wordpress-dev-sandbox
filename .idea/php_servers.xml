@@ -1,0 +1,10 @@
+ <component name="PhpDebugGeneral" listening_started="true" />
+  <component name="PhpServers">
+    <servers>
+      <server host="wp1.docker.local" id="a39e0dd4-cedc-4f7e-9741-3e3568a37094" name="App" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$/www" remote-root="/var/www/html" />
+        </path_mappings>
+      </server>
+    </servers>
+  </component>

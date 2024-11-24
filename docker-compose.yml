@@ -1,0 +1,108 @@
+services:
+
+  wordpress:
+    container_name: wordpress-wpd
+    restart: always
+    build:
+      dockerfile: Dockerfile # this line is actually redundant here - you need it only if you want to use some custom name for your Dockerfile
+      context: ./xdebug # a path to a directory containing a Dockerfile, or a url to a git repository
+
+    ports:
+      - "80:80"
+      #- "8000:8000" # Expose Browsersync port
+    environment:
+      VIRTUAL_HOST: ${WP_DOMAIN}
+      ADMIN_USER: ${ADMIN_USER}
+      ADMIN_PASS: ${ADMIN_PASS}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      WP_TITLE: ${WP_TITLE}
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: $DB_NAME
+      WORDPRESS_DB_USER: $DB_USER_NAME
+      WORDPRESS_DB_PASSWORD: $DB_USER_PASSWORD
+      # Set the XDEBUG_CONFIG as described here: https://xdebug.org/docs/remote
+      XDEBUG_CONFIG: client_host=172.17.0.1 #for ubuntu
+      #XDEBUG_CONFIG: client_host=host.docker.internal #for macos and windows
+      #PHP_IDE_CONFIG: serverName=wp1.docker.local
+    depends_on:
+      - db
+
+    volumes:
+      - ./www:/var/www/html
+      - ./logs/php:/var/log
+
+    networks:
+      - backend-wpd
+      - frontend-wpd
+  php-composer:
+    container_name: php-composer
+    build:
+      context: ./php
+    restart: always
+    working_dir: /var/www/html
+    environment:
+      COMPOSER_ALLOW_SUPERUSER: 1
+    volumes:
+      - ./www:/var/www/html
+    networks:
+      - backend-wpd
+      - frontend-wpd
+    command: tail -f /dev/null
+  nodephp:
+    build:
+      context: ./nodephp
+      dockerfile: Dockerfile-php82
+    container_name: nodephp
+    working_dir: /var/www/html
+    stdin_open: true # -i Ejecuta el contenedor en modo interactivo
+    tty: true # -t Reasignar una pseudo terminal de entrada para el contenedor
+    #ports:
+    #  - "192.168.99.7:5173:5173"
+    volumes:
+      - ./www:/var/www/html
+    ports:
+      - "5173:5173" # Expose port 5173 for nodephp
+    environment:
+      VIRTUAL_HOST: nodephp.docker.local # Set the virtual host for nodephp
+    networks:
+      - backend-wpd
+      - frontend-wpd
+  node-lts:
+    image: node:lts
+    restart: always
+    working_dir: /var/www/html
+    user: node
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./www:/var/www/html
+    networks:
+      - backend-wpd
+      - frontend-wpd
+  db:
+    container_name: mysql-wpd
+    image: mysql:8.0.33
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: mydbrootpassword
+      #MYSQL_RANDOM_ROOT_PASSWORD: '1' # You can use this instead of the option right above if you do not want to be able login to MySQL under root
+      MYSQL_DATABASE: mydbname
+      MYSQL_USER: mydbuser
+      MYSQL_PASSWORD: mydbpassword
+
+    ports:
+      -  "3306:3306" # I prefer to keep the ports available for external connections in the Development environment to be able to work with the database
+                     # from programs like e.g. HeidiSQL on Windows or DBeaver on Mac.
+
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+
+    networks:
+      - backend-wpd
+
+
+networks:
+  frontend-wpd:
+  backend-wpd:

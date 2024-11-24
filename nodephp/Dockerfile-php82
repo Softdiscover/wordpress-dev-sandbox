@@ -1,0 +1,67 @@
+# Use the official Node.js Alpine image as the base image
+FROM node:20.11.0-alpine
+
+
+# Install Subversion (svn)
+RUN apk add --no-cache subversion
+
+# Install Bash
+RUN apk add --no-cache bash
+
+# List contents of /bin/ to verify bash installation
+RUN ls /bin/
+
+# Test Bash installation
+RUN bash -c "echo 'Bash is installed and working!'"
+
+# Install PHP and WP-CLI dependencies
+RUN apk update && apk add --no-cache \
+    php \
+    php-cli \
+    php-phar \
+    php-mysqli \
+    php-json \
+    php-curl \
+    php-mbstring \
+    php-openssl \
+    php-xml \
+    php-simplexml \
+    php-tokenizer \
+    php-ctype \
+    php-dom \
+    php-xmlwriter \
+    php-xmlreader \
+    php-pdo \
+    php-pdo_mysql \
+    php-zlib \
+    php-zip \
+    php-fileinfo \
+    curl \
+    less \
+    mariadb-client \
+    git \
+    unzip \
+    wget
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Verify Composer installation
+RUN composer --version
+
+
+# Verify PHP installation
+RUN which php && php -v
+
+# Install WP-CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp
+
+# Set working directory
+WORKDIR /www-node/
+ 
+
+# Default command
+CMD ["bash"]
+
