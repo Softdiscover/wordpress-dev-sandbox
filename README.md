@@ -35,4 +35,15 @@ after running, add file permissions
 sudo chmod -R g+rw www
 ```
 
+For debugging, use next chrome extension for enable and disable debug mode: 
+https://chromewebstore.google.com/detail/xdebug-chrome-extension/oiofkammbajfehgpleginfomeppgnglk?hl=en
+
+if you don't use that extension, you will get next warning on debug log: 
+
+```bash 
+Xdebug: [Step Debug] Could not connect to debugging client. Tried: 172.17.0.1:9003 (through xdebug.client_host/xdebug.client_port).
+```
+
+
+
 then visit: wp1.docker.local
